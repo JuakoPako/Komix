@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- Paleta KOMIX -->
+    <color name="komix_aqua">#2EC4B6</color>
+    <color name="komix_aqua_light">#7FE0D6</color>
+    <color name="komix_aqua_dark">#17877D</color>
+
+    <color name="komix_charcoal">#1E1E1E</color>
+    <color name="komix_charcoal_soft">#2A2A2A</color>
+
+    <color name="komix_white">#FFFFFF</color>
+    <color name="komix_gray_text">#B5B5B5</color>
+    <color name="komix_error">#E63946</color>
+</resources>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "522143724685",
+    "project_id": "komix-23bc2",
+    "storage_bucket": "komix-23bc2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522143724685:android:88e4fa7ac1a7e900011ec4",
+        "android_client_info": {
+          "package_name": "com.joaquin.komix"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBv8Cu85ZQWB2KdL_pQR0-uW8EN2mLMU4Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
