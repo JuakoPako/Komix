@@ -46,7 +46,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView">
 
-        <!-- Fila usuario: icono fijo + campo de texto -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -73,7 +73,7 @@
                 tools:ignore="SpeakableTextPresentCheck" />
         </LinearLayout>
 
-        <!-- Fila contraseña: icono fijo + campo de texto -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

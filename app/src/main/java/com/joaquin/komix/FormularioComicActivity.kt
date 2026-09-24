@@ -33,7 +33,7 @@ class FormularioComicActivity : AppCompatActivity() {
     private lateinit var spinnerCategoria: AutoCompleteTextView
     private lateinit var spinnerEditorial: AutoCompleteTextView
 
-    // Como AutoCompleteTextView no tiene selectedItemPosition, guardamos la posición elegida a mano
+
     private var categoriaSeleccionadaPos: Int = -1
     private var editorialSeleccionadaPos: Int = -1
 

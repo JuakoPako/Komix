@@ -3,6 +3,7 @@ package com.joaquin.komix
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -44,22 +45,69 @@ class ListaComicsActivity : AppCompatActivity() {
         dibujarLista()
     }
 
+
+    //pa q se vea bonito
     private fun dibujarLista() {
         contenedor.removeAllViews()
 
         for (comic in ComicRepositorio.listaComics) {
-            val fila = LinearLayout(this)
-            fila.orientation = LinearLayout.HORIZONTAL
-            fila.setPadding(16, 16, 16, 16)
-            fila.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+
+
+            val fila = android.widget.FrameLayout(this)
+            val parametrosFila = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 220
+            )
+            parametrosFila.setMargins(0, 0, 0, 12)
+            fila.layoutParams = parametrosFila
+            fila.clipToOutline = false
+
+
+            val imgFondo = ImageView(this)
+            imgFondo.scaleType = ImageView.ScaleType.CENTER_CROP
+            imgFondo.layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT
+            )
+            imgFondo.alpha = 0.7f
+
+            if (comic.portadaBitmap != null) {
+                imgFondo.setImageBitmap(comic.portadaBitmap)
+            } else {
+                imgFondo.setImageResource(android.R.drawable.ic_menu_gallery)
+            }
+
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                imgFondo.setRenderEffect(
+                    android.graphics.RenderEffect.createBlurEffect(
+                        30f, 30f, android.graphics.Shader.TileMode.CLAMP
+                    )
+                )
+            }
+
+
+            val overlay = View(this)
+            overlay.setBackgroundColor(android.graphics.Color.parseColor("#60000000"))
+            overlay.layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT
+            )
+
+
+            val filaContenido = LinearLayout(this)
+            filaContenido.orientation = LinearLayout.HORIZONTAL
+            filaContenido.gravity = android.view.Gravity.CENTER_VERTICAL
+            filaContenido.setPadding(16, 16, 16, 16)
+            filaContenido.layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT
             )
 
             val imgPortada = ImageView(this)
             val parametrosImagen = LinearLayout.LayoutParams(150, 150)
             parametrosImagen.marginEnd = 16
             imgPortada.layoutParams = parametrosImagen
+            imgPortada.scaleType = ImageView.ScaleType.CENTER_CROP
 
             if (comic.portadaBitmap != null) {
                 imgPortada.setImageBitmap(comic.portadaBitmap)
@@ -116,10 +164,15 @@ class ListaComicsActivity : AppCompatActivity() {
                 confirmarEliminar(comic)
             }
 
-            fila.addView(imgPortada)
-            fila.addView(infoLayout)
-            fila.addView(btnEditar)
-            fila.addView(btnEliminar)
+            filaContenido.addView(imgPortada)
+            filaContenido.addView(infoLayout)
+            filaContenido.addView(btnEditar)
+            filaContenido.addView(btnEliminar)
+
+
+            fila.addView(imgFondo)
+            fila.addView(overlay)
+            fila.addView(filaContenido)
 
             contenedor.addView(fila)
         }
