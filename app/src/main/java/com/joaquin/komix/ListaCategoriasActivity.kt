@@ -1,11 +1,9 @@
 package com.joaquin.komix
 
-import android.content.DialogInterface
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
+import android.view.LayoutInflater
 import android.widget.EditText
-import android.widget.ImageView
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -14,133 +12,159 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.joaquin.komix.Modelos.Categoria
-import com.joaquin.komix.Repositorios.CategoriaRepositorio
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class ListaCategoriasActivity : AppCompatActivity() {
 
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+    private lateinit var oFirebaseAnalytics: FirebaseAnalytics
+
     private lateinit var contenedor: LinearLayout
+    private lateinit var lblContadorCategorias: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_lista_categorias)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        contenedor = findViewById(R.id.contenedorCategorias)
-        val btnAgregar = findViewById<Button>(R.id.btnAgregarCategoria)
+        oFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
-        dibujarLista()
+        contenedor = findViewById(R.id.contenedorCategorias)
+        lblContadorCategorias = findViewById(R.id.lblContadorCategorias)
+        val btnAgregar = findViewById<ExtendedFloatingActionButton>(R.id.btnAgregarCategoria)
+        val btnVolver = findViewById<ImageButton>(R.id.btnVolver)
+
+        btnVolver.setOnClickListener { finish() }
 
         btnAgregar.setOnClickListener {
-            mostrarDialogoFormulario(null)
+            mostrarDialogoFormulario(null, "")
         }
     }
 
-    private fun dibujarLista() {
-        contenedor.removeAllViews()
-
-        for (categoria in CategoriaRepositorio.listaCategorias) {
-            val fila = LinearLayout(this)
-            fila.orientation = LinearLayout.HORIZONTAL
-            fila.setPadding(24, 16, 24, 16)
-            fila.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-
-            val txtNombre = TextView(this)
-            txtNombre.text = categoria.nombre
-            txtNombre.textSize = 16f
-            txtNombre.setTextColor(android.graphics.Color.WHITE)
-            txtNombre.layoutParams = LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
-            )
-
-            val btnEditar = ImageView(this)
-            btnEditar.setImageResource(android.R.drawable.ic_menu_edit)
-            val parametrosBtnEditar = LinearLayout.LayoutParams(60, 60)
-            parametrosBtnEditar.marginEnd = 24
-            btnEditar.layoutParams = parametrosBtnEditar
-            btnEditar.setOnClickListener {
-                mostrarDialogoFormulario(categoria)
-            }
-
-            val btnEliminar = ImageView(this)
-            btnEliminar.setImageResource(android.R.drawable.ic_menu_delete)
-            btnEliminar.layoutParams = LinearLayout.LayoutParams(60, 60)
-            btnEliminar.setOnClickListener {
-                confirmarEliminar(categoria)
-            }
-
-            fila.addView(txtNombre)
-            fila.addView(btnEditar)
-            fila.addView(btnEliminar)
-
-            contenedor.addView(fila)
-        }
+    override fun onResume() {
+        super.onResume()
+        cargarDatos()
     }
 
-    private fun mostrarDialogoFormulario(categoria: Categoria?) {
-        val input = EditText(this)
-        input.hint = "Nombre de la categoría"
-        if (categoria != null) {
-            input.setText(categoria.nombre)
-        }
+    private fun cargarDatos() {
+        val uidActual = auth.currentUser?.uid ?: ""
 
-        var tituloDialogo = "Agregar Categoría"
-        if (categoria != null) {
-            tituloDialogo = "Editar Categoría"
-        }
+        db.collection("Categorias")
+            .whereEqualTo("uid", uidActual)
+            .get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful && task.result != null) {
+                    contenedor.removeAllViews()
+                    val docs = task.result.documents
+                    val total = docs.size
+                    lblContadorCategorias.text = if (total == 1) "1 categoría registrada" else "$total categorías registradas"
 
-        val clickGuardar = object : DialogInterface.OnClickListener {
-            override fun onClick(dialogo: DialogInterface, numeroBoton: Int) {
-                val texto = input.text.toString().trim()
-                if (texto.isEmpty()) {
-                    Toast.makeText(this@ListaCategoriasActivity, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
-                } else {
-                    if (categoria == null) {
-                        var idMasAlto = 0
-                        for (c in CategoriaRepositorio.listaCategorias) {
-                            if (c.id > idMasAlto) {
-                                idMasAlto = c.id
-                            }
+                    val inflater = LayoutInflater.from(this)
+
+                    for (doc in docs) {
+                        val id = doc.id
+                        val nombre = doc.getString("nombre") ?: "Sin nombre"
+
+                        val itemView = inflater.inflate(R.layout.item_categoria, contenedor, false)
+
+                        val txtNombre = itemView.findViewById<TextView>(R.id.txtNombreCategoria)
+                        val btnEditar = itemView.findViewById<ImageButton>(R.id.btnEditar)
+                        val btnEliminar = itemView.findViewById<ImageButton>(R.id.btnEliminar)
+
+                        txtNombre.text = nombre
+
+                        btnEditar.setOnClickListener {
+                            mostrarDialogoFormulario(id, nombre)
                         }
-                        val nuevoId = idMasAlto + 1
-                        CategoriaRepositorio.agregar(Categoria(nuevoId, texto))
-                    } else {
-                        CategoriaRepositorio.actualizar(Categoria(categoria.id, texto))
+
+                        btnEliminar.setOnClickListener {
+                            confirmarEliminar(id, nombre)
+                        }
+
+                        contenedor.addView(itemView)
                     }
-                    dibujarLista()
+
+                    registrarEventoAnalytics("listado_consultado")
+
+                } else {
+                    Toast.makeText(this, "Error al cargar categorías", Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+
+    private fun mostrarDialogoFormulario(idEditando: String?, nombreEdit: String) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_categoria_formulario, null)
+        val input = dialogView.findViewById<EditText>(R.id.inputNombreCategoria)
+
+        if (!idEditando.isNullOrEmpty()) {
+            input.setText(nombreEdit)
         }
+
+        val tituloDialogo = if (idEditando == null) "Agregar Categoría" else "Editar Categoría"
 
         AlertDialog.Builder(this)
             .setTitle(tituloDialogo)
-            .setView(input)
-            .setPositiveButton("Guardar", clickGuardar)
+            .setView(dialogView)
+            .setPositiveButton("Guardar") { _, _ ->
+                val texto = input.text.toString().trim()
+                val uidActual = auth.currentUser?.uid ?: ""
+
+                if (texto.isEmpty()) {
+                    Toast.makeText(this, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
+                } else {
+                    val datos = hashMapOf<String, Any>(
+                        "uid" to uidActual,
+                        "nombre" to texto
+                    )
+
+                    if (idEditando == null) {
+                        db.collection("Categorias").add(datos).addOnSuccessListener {
+                            registrarEventoAnalytics("registro_creado")
+                            Toast.makeText(this, "Categoría agregada", Toast.LENGTH_SHORT).show()
+                            cargarDatos()
+                        }
+                    } else {
+                        db.collection("Categorias").document(idEditando).update(datos).addOnSuccessListener {
+                            registrarEventoAnalytics("registro_actualizado")
+                            Toast.makeText(this, "Categoría actualizada", Toast.LENGTH_SHORT).show()
+                            cargarDatos()
+                        }
+                    }
+                }
+            }
             .setNegativeButton("Cancelar", null)
             .show()
     }
 
-    private fun confirmarEliminar(categoria: Categoria) {
-        val clickEliminarConfirmado = object : DialogInterface.OnClickListener {
-            override fun onClick(dialogo: DialogInterface, numeroBoton: Int) {
-                CategoriaRepositorio.eliminar(categoria)
-                dibujarLista()
-            }
-        }
-
+    private fun confirmarEliminar(id: String, nombre: String) {
         AlertDialog.Builder(this)
             .setTitle("Eliminar categoría")
-            .setMessage("¿Seguro que quieres eliminar \"" + categoria.nombre + "\"?")
-            .setPositiveButton("Eliminar", clickEliminarConfirmado)
+            .setMessage("¿Seguro que quieres eliminar \"$nombre\"?")
+            .setPositiveButton("Eliminar") { _, _ ->
+                db.collection("Categorias").document(id).delete().addOnSuccessListener {
+                    registrarEventoAnalytics("registro_eliminado")
+                    Toast.makeText(this, "Categoría eliminada", Toast.LENGTH_SHORT).show()
+                    cargarDatos()
+                }
+            }
             .setNegativeButton("Cancelar", null)
             .show()
+    }
+
+    private fun registrarEventoAnalytics(nombreEvento: String) {
+        val bundle = Bundle().apply {
+            putString("tipo_entidad", "categoria")
+        }
+        oFirebaseAnalytics.logEvent(nombreEvento, bundle)
     }
 }

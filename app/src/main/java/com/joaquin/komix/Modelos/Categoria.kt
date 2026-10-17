@@ -1,6 +1,8 @@
 package com.joaquin.komix.Modelos
 
 data class Categoria(
-    val id: Int,
-    var nombre: String
+    var id: String = "",
+    var uid: String = "",
+    var nombre: String = "",
+    var descripcion: String = ""
 )

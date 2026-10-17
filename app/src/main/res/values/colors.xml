@@ -8,10 +8,13 @@
     <color name="komix_aqua_light">#7FE0D6</color>
     <color name="komix_aqua_dark">#17877D</color>
 
-    <color name="komix_charcoal">#1E1E1E</color>
-    <color name="komix_charcoal_soft">#2A2A2A</color>
+    <color name="komix_charcoal">#18181B</color>
+    <color name="komix_charcoal_soft">#27272A</color>
+    <color name="komix_card_border">#3F3F46</color>
 
     <color name="komix_white">#FFFFFF</color>
-    <color name="komix_gray_text">#B5B5B5</color>
+    <color name="komix_gray_text">#A1A1AA</color>
     <color name="komix_error">#E63946</color>
+    <color name="komix_red">#FF4D4D</color>
+    <color name="komix_red_soft">#20FF4D4D</color>
 </resources>

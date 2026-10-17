@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Reglas de seguridad: Cada usuario solo puede leer, crear, actualizar y borrar sus propios datos
+    match /Comics/{comicId} {
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow read, update, delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+
+    match /Editoriales/{editorialId} {
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow read, update, delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+
+    match /Categorias/{categoriaId} {
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow read, update, delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+  }
+}

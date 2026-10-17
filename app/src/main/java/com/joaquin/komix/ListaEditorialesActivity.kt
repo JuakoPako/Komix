@@ -1,10 +1,11 @@
 package com.joaquin.komix
 
-import android.content.DialogInterface
 import android.os.Bundle
-import android.widget.Button
+import android.view.LayoutInflater
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.EditText
-import android.widget.ImageView
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -13,148 +14,210 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.joaquin.komix.Modelos.Editorial
-import com.joaquin.komix.Repositorios.EditorialRepositorio
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class ListaEditorialesActivity : AppCompatActivity() {
 
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+    private lateinit var oFirebaseAnalytics: FirebaseAnalytics
+
     private lateinit var contenedor: LinearLayout
+    private lateinit var lblContadorEditoriales: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_lista_editoriales)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        contenedor = findViewById(R.id.contenedorEditoriales)
-        val btnAgregar = findViewById<Button>(R.id.btnAgregarEditorial)
+        oFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
-        dibujarLista()
+        contenedor = findViewById(R.id.contenedorEditoriales)
+        lblContadorEditoriales = findViewById(R.id.lblContadorEditoriales)
+        val btnAgregar = findViewById<ExtendedFloatingActionButton>(R.id.btnAgregarEditorial)
+        val btnVolver = findViewById<ImageButton>(R.id.btnVolver)
+
+        btnVolver.setOnClickListener { finish() }
 
         btnAgregar.setOnClickListener {
-            mostrarDialogoFormulario(null)
+            mostrarDialogoFormulario(null, "", "", "", 0, "Activa")
         }
     }
 
-    private fun dibujarLista() {
-        contenedor.removeAllViews()
-
-        for (editorial in EditorialRepositorio.listaEditoriales) {
-            val fila = LinearLayout(this)
-            fila.orientation = LinearLayout.HORIZONTAL
-            fila.setPadding(24, 16, 24, 16)
-            fila.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-
-            val txtInfo = TextView(this)
-            txtInfo.text = editorial.nombre + " · " + editorial.pais
-            txtInfo.textSize = 16f
-            txtInfo.setTextColor(android.graphics.Color.WHITE)
-            txtInfo.layoutParams = LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
-            )
-
-            val btnEditar = ImageView(this)
-            btnEditar.setImageResource(android.R.drawable.ic_menu_edit)
-            val parametrosBtnEditar = LinearLayout.LayoutParams(60, 60)
-            parametrosBtnEditar.marginEnd = 24
-            btnEditar.layoutParams = parametrosBtnEditar
-            btnEditar.setOnClickListener {
-                mostrarDialogoFormulario(editorial)
-            }
-
-            val btnEliminar = ImageView(this)
-            btnEliminar.setImageResource(android.R.drawable.ic_menu_delete)
-            btnEliminar.layoutParams = LinearLayout.LayoutParams(60, 60)
-            btnEliminar.setOnClickListener {
-                confirmarEliminar(editorial)
-            }
-
-            fila.addView(txtInfo)
-            fila.addView(btnEditar)
-            fila.addView(btnEliminar)
-
-            contenedor.addView(fila)
-        }
+    override fun onResume() {
+        super.onResume()
+        cargarDatos()
     }
 
-    private fun mostrarDialogoFormulario(editorial: Editorial?) {
-        val layout = LinearLayout(this)
-        layout.orientation = LinearLayout.VERTICAL
-        layout.setPadding(40, 20, 40, 20)
+    private fun cargarDatos() {
+        val uidActual = auth.currentUser?.uid ?: ""
 
-        val inputNombre = EditText(this)
-        inputNombre.hint = "Nombre de la editorial"
-        if (editorial != null) {
-            inputNombre.setText(editorial.nombre)
-        }
+        db.collection("Editoriales")
+            .whereEqualTo("uid", uidActual)
+            .get()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful && task.result != null) {
+                    contenedor.removeAllViews()
+                    val docs = task.result.documents
+                    val total = docs.size
+                    lblContadorEditoriales.text = if (total == 1) "1 editorial registrada" else "$total editoriales registradas"
 
-        val inputPais = EditText(this)
-        inputPais.hint = "País"
-        if (editorial != null) {
-            inputPais.setText(editorial.pais)
-        }
+                    val inflater = LayoutInflater.from(this)
 
-        layout.addView(inputNombre)
-        layout.addView(inputPais)
+                    for (doc in docs) {
+                        val id = doc.id
+                        val nombre = doc.getString("nombre") ?: "Sin nombre"
+                        val correo = doc.getString("correoContacto") ?: ""
+                        val pais = doc.getString("paisOrigen") ?: ""
+                        val anio = doc.getLong("anioFundacion")?.toInt() ?: 0
+                        val estado = doc.getString("estado") ?: "Activa"
 
-        var tituloDialogo = "Agregar Editorial"
-        if (editorial != null) {
-            tituloDialogo = "Editar Editorial"
-        }
+                        val itemView = inflater.inflate(R.layout.item_editorial, contenedor, false)
 
-        val clickGuardar = object : DialogInterface.OnClickListener {
-            override fun onClick(dialogo: DialogInterface, numeroBoton: Int) {
-                val nombre = inputNombre.text.toString().trim()
-                val pais = inputPais.text.toString().trim()
+                        val txtInicial = itemView.findViewById<TextView>(R.id.txtInicial)
+                        val txtNombre = itemView.findViewById<TextView>(R.id.txtNombreEditorial)
+                        val txtPais = itemView.findViewById<TextView>(R.id.txtPaisEditorial)
+                        val txtContacto = itemView.findViewById<TextView>(R.id.txtContactoEditorial)
+                        val btnEditar = itemView.findViewById<ImageButton>(R.id.btnEditar)
+                        val btnEliminar = itemView.findViewById<ImageButton>(R.id.btnEliminar)
 
-                if (nombre.isEmpty() || pais.isEmpty()) {
-                    Toast.makeText(this@ListaEditorialesActivity, "Completa ambos campos", Toast.LENGTH_SHORT).show()
-                } else {
-                    if (editorial == null) {
-                        var idMasAlto = 0
-                        for (e in EditorialRepositorio.listaEditoriales) {
-                            if (e.id > idMasAlto) {
-                                idMasAlto = e.id
-                            }
+                        txtInicial.text = nombre.take(1).uppercase()
+                        txtNombre.text = nombre
+
+                        val infoPaisAnio = buildString {
+                            if (pais.isNotEmpty()) append("📍 $pais")
+                            if (anio > 0) append(" · Fundada en $anio")
                         }
-                        val nuevoId = idMasAlto + 1
-                        EditorialRepositorio.agregar(Editorial(nuevoId, nombre, pais))
-                    } else {
-                        EditorialRepositorio.actualizar(Editorial(editorial.id, nombre, pais))
+                        txtPais.text = infoPaisAnio
+
+                        val estadoIcono = if (estado == "Inactiva") "🔴 Inactiva" else "🟢 Activa"
+                        val infoContacto = buildString {
+                            if (correo.isNotEmpty()) append("✉️ $correo · ")
+                            append(estadoIcono)
+                        }
+                        txtContacto.text = infoContacto
+
+                        btnEditar.setOnClickListener {
+                            mostrarDialogoFormulario(id, nombre, correo, pais, anio, estado)
+                        }
+
+                        btnEliminar.setOnClickListener {
+                            confirmarEliminar(id, nombre)
+                        }
+
+                        contenedor.addView(itemView)
                     }
-                    dibujarLista()
+
+                    registrarEventoAnalytics("listado_consultado")
+
+                } else {
+                    Toast.makeText(this, "Error al cargar editoriales", Toast.LENGTH_SHORT).show()
                 }
             }
+    }
+
+    private fun mostrarDialogoFormulario(
+        idEditando: String?,
+        nombreEdit: String,
+        correoEdit: String,
+        paisEdit: String,
+        anioEdit: Int,
+        estadoEdit: String
+    ) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_editorial_formulario, null)
+        val inputNombre = dialogView.findViewById<EditText>(R.id.inputNombre)
+        val inputCorreo = dialogView.findViewById<EditText>(R.id.inputCorreo)
+        val inputPais = dialogView.findViewById<EditText>(R.id.inputPais)
+        val inputAnio = dialogView.findViewById<EditText>(R.id.inputAnio)
+        val spinnerEstado = dialogView.findViewById<AutoCompleteTextView>(R.id.spinnerEstado)
+
+        val opcionesEstado = listOf("Activa", "Inactiva")
+        val adapterEstado = ArrayAdapter(this, R.layout.item_dropdown_dialog, opcionesEstado)
+        spinnerEstado.setAdapter(adapterEstado)
+
+        if (!idEditando.isNullOrEmpty()) {
+            inputNombre.setText(nombreEdit)
+            inputCorreo.setText(correoEdit)
+            inputPais.setText(paisEdit)
+            if (anioEdit > 0) inputAnio.setText(anioEdit.toString())
+            spinnerEstado.setText(estadoEdit, false)
+        } else {
+            spinnerEstado.setText("Activa", false)
         }
+
+        val tituloDialogo = if (idEditando == null) "Agregar Editorial" else "Editar Editorial"
 
         AlertDialog.Builder(this)
             .setTitle(tituloDialogo)
-            .setView(layout)
-            .setPositiveButton("Guardar", clickGuardar)
+            .setView(dialogView)
+            .setPositiveButton("Guardar") { _, _ ->
+                val nombre = inputNombre.text.toString().trim()
+                val correo = inputCorreo.text.toString().trim()
+                val pais = inputPais.text.toString().trim()
+                val anio = inputAnio.text.toString().toIntOrNull() ?: 0
+                val estado = spinnerEstado.text.toString().trim().ifEmpty { "Activa" }
+
+                val uidActual = auth.currentUser?.uid ?: ""
+
+                if (nombre.isEmpty() || pais.isEmpty()) {
+                    Toast.makeText(this, "Nombre y país son obligatorios", Toast.LENGTH_SHORT).show()
+                } else {
+                    val datos = hashMapOf<String, Any>(
+                        "uid" to uidActual,
+                        "nombre" to nombre,
+                        "correoContacto" to correo,
+                        "paisOrigen" to pais,
+                        "anioFundacion" to anio,
+                        "estado" to estado
+                    )
+
+                    if (idEditando == null) {
+                        db.collection("Editoriales").add(datos).addOnSuccessListener {
+                            registrarEventoAnalytics("registro_creado")
+                            Toast.makeText(this, "Editorial guardada", Toast.LENGTH_SHORT).show()
+                            cargarDatos()
+                        }
+                    } else {
+                        db.collection("Editoriales").document(idEditando).update(datos).addOnSuccessListener {
+                            registrarEventoAnalytics("registro_actualizado")
+                            Toast.makeText(this, "Editorial actualizada", Toast.LENGTH_SHORT).show()
+                            cargarDatos()
+                        }
+                    }
+                }
+            }
             .setNegativeButton("Cancelar", null)
             .show()
     }
 
-    private fun confirmarEliminar(editorial: Editorial) {
-        val clickEliminarConfirmado = object : DialogInterface.OnClickListener {
-            override fun onClick(dialogo: DialogInterface, numeroBoton: Int) {
-                EditorialRepositorio.eliminar(editorial)
-                dibujarLista()
-            }
-        }
-
+    private fun confirmarEliminar(id: String, nombre: String) {
         AlertDialog.Builder(this)
             .setTitle("Eliminar editorial")
-            .setMessage("¿Seguro que quieres eliminar \"" + editorial.nombre + "\"?")
-            .setPositiveButton("Eliminar", clickEliminarConfirmado)
+            .setMessage("¿Seguro que quieres eliminar \"$nombre\"?")
+            .setPositiveButton("Eliminar") { _, _ ->
+                db.collection("Editoriales").document(id).delete().addOnSuccessListener {
+                    registrarEventoAnalytics("registro_eliminado")
+                    Toast.makeText(this, "Editorial eliminada", Toast.LENGTH_SHORT).show()
+                    cargarDatos()
+                }
+            }
             .setNegativeButton("Cancelar", null)
             .show()
+    }
+
+    private fun registrarEventoAnalytics(nombreEvento: String) {
+        val bundle = Bundle().apply {
+            putString("tipo_entidad", "editorial")
+        }
+        oFirebaseAnalytics.logEvent(nombreEvento, bundle)
     }
 }

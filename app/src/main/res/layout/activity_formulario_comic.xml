@@ -1,139 +1,228 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/komix_charcoal">
 
+    <!-- Header / Barra Superior -->
     <LinearLayout
-        android:id="@+id/main"
+        android:id="@+id/headerBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnVolver"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Volver"
+            android:padding="6dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_comic"
+            app:tint="@color/komix_aqua" />
 
         <TextView
             android:id="@+id/titulo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="Cómic"
+            android:layout_marginStart="12dp"
+            android:text="Formulario Cómic"
             android:textColor="@color/komix_white"
-            android:textSize="20sp" />
-
-        <ImageView
-            android:id="@+id/imgPreview"
-            android:layout_width="150dp"
-            android:layout_height="200dp"
-            android:layout_gravity="center"
-            android:background="@color/komix_charcoal_soft"
-            android:contentDescription="@string/portada_comic"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery" />
-
-        <Button
-            android:id="@+id/btnSeleccionarImagen"
-            style="@style/Widget.Material3.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="8dp"
-            android:backgroundTint="@color/komix_aqua"
-            android:text="Elegir Portada"
-            android:textColor="@color/komix_charcoal"
-            app:cornerRadius="0dp" />
-
-        <EditText
-            android:id="@+id/txtTitulo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="@color/komix_aqua"
-            android:hint="Título"
-            android:textColor="@color/komix_white"
-            android:textColorHint="@color/komix_gray_text" />
-
-        <EditText
-            android:id="@+id/txtAutor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="@color/komix_aqua"
-            android:hint="Autor"
-            android:textColor="@color/komix_white"
-            android:textColorHint="@color/komix_gray_text" />
-
-        <EditText
-            android:id="@+id/txtAnio"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="@color/komix_aqua"
-            android:hint="Año de publicación"
-            android:inputType="number"
-            android:textColor="@color/komix_white"
-            android:textColorHint="@color/komix_gray_text" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Categoría"
-            android:textColor="@color/komix_white" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilCategoria"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            app:boxStrokeColor="@color/komix_aqua"
-            app:hintTextColor="@color/komix_aqua">
-
-            <AutoCompleteTextView
-                android:id="@+id/spinnerCategoria"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="none"
-                android:popupBackground="@color/komix_charcoal_soft"
-                android:textColor="@color/komix_white" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Editorial"
-            android:textColor="@color/komix_white" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilEditorial"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            app:boxStrokeColor="@color/komix_aqua"
-            app:hintTextColor="@color/komix_aqua">
-
-            <AutoCompleteTextView
-                android:id="@+id/spinnerEditorial"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="none"
-                android:popupBackground="@color/komix_charcoal_soft"
-                android:textColor="@color/komix_white" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <Button
-            android:id="@+id/btnGuardar"
-            style="@style/Widget.Material3.Button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:backgroundTint="@color/komix_aqua"
-            android:text="Guardar"
-            android:textColor="@color/komix_charcoal"
-            app:cornerRadius="0dp" />
-
+            android:textSize="22sp"
+            android:textStyle="bold" />
     </LinearLayout>
-</ScrollView>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardBackgroundColor="@color/komix_charcoal_soft"
+                app:cardCornerRadius="16dp"
+                app:strokeColor="@color/komix_card_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/imgPreview"
+                        android:layout_width="120dp"
+                        android:layout_height="170dp"
+                        android:scaleType="centerCrop"
+                        android:src="@android:drawable/ic_menu_gallery"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
+                        app:strokeColor="@color/komix_card_border"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSeleccionarImagen"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Elegir Portada"
+                        android:textColor="@color/komix_aqua"
+                        app:cornerRadius="10dp"
+                        app:strokeColor="@color/komix_aqua" />
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilTitulo"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Título del cómic"
+                app:boxStrokeColor="@color/komix_aqua"
+                app:hintTextColor="@color/komix_aqua">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/txtTitulo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapWords"
+                    android:textColor="@color/komix_white" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilAutor"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Autor / Guionista"
+                app:boxStrokeColor="@color/komix_aqua"
+                app:hintTextColor="@color/komix_aqua">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/txtAutor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapWords"
+                    android:textColor="@color/komix_white" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilAnio"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Año de publicación"
+                app:boxStrokeColor="@color/komix_aqua"
+                app:hintTextColor="@color/komix_aqua">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/txtAnio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:textColor="@color/komix_white" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPrecio"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Precio ($)"
+                app:boxStrokeColor="@color/komix_aqua"
+                app:hintTextColor="@color/komix_aqua">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/txtPrecio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
+                    android:textColor="@color/komix_white" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilCategoria"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Categoría"
+                app:boxStrokeColor="@color/komix_aqua"
+                app:hintTextColor="@color/komix_aqua">
+
+                <AutoCompleteTextView
+                    android:id="@+id/spinnerCategoria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:popupBackground="@color/komix_charcoal_soft"
+                    android:textColor="@color/komix_white" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilEditorial"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="Editorial"
+                app:boxStrokeColor="@color/komix_aqua"
+                app:hintTextColor="@color/komix_aqua">
+
+                <AutoCompleteTextView
+                    android:id="@+id/spinnerEditorial"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:popupBackground="@color/komix_charcoal_soft"
+                    android:textColor="@color/komix_white" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGuardar"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="24dp"
+                android:backgroundTint="@color/komix_aqua"
+                android:text="Guardar Cómic"
+                android:textColor="@color/komix_charcoal"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
