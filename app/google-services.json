@@ -88,6 +88,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "522143724685-ganggv797cqbksgcj3908fhj3spl5jue.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.joaquin.komix",
+            "certificate_hash": "da4431b0b5c9029641621de994ac1c8815743822"
+          }
+        },
+        {
           "client_id": "522143724685-kkgkka2cp9dlrpk4dib182kg23j3ajkf.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
