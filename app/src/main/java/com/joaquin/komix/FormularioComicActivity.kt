@@ -31,6 +31,7 @@ class FormularioComicActivity : AppCompatActivity() {
 
     private var imagenSeleccionada: Bitmap? = null
     private var idComicEditando: String? = null
+    private var guardando = false
 
     private lateinit var imgPreview: ImageView
     private lateinit var txtTitulo: EditText
@@ -39,6 +40,7 @@ class FormularioComicActivity : AppCompatActivity() {
     private lateinit var txtPrecio: EditText
     private lateinit var spinnerCategoria: AutoCompleteTextView
     private lateinit var spinnerEditorial: AutoCompleteTextView
+    private lateinit var btnGuardar: Button
 
     private val categoriasListaIds = ArrayList<String>()
     private val categoriasListaNombres = ArrayList<String>()
@@ -51,9 +53,16 @@ class FormularioComicActivity : AppCompatActivity() {
 
     private val selectorImagen = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
-            val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-            imagenSeleccionada = bitmap
-            imgPreview.setImageBitmap(bitmap)
+            try {
+                val original = MediaStore.Images.Media.getBitmap(contentResolver, uri)
+                val bitmap = reducirBitmap(original)
+                imagenSeleccionada = bitmap
+                imgPreview.setImageBitmap(bitmap)
+            } catch (e: Exception) {
+                Toast.makeText(this, "No se pudo cargar la imagen", Toast.LENGTH_SHORT).show()
+            } catch (e: OutOfMemoryError) {
+                Toast.makeText(this, "La imagen es demasiado grande", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -77,9 +86,9 @@ class FormularioComicActivity : AppCompatActivity() {
         txtPrecio = findViewById(R.id.txtPrecio)
         spinnerCategoria = findViewById(R.id.spinnerCategoria)
         spinnerEditorial = findViewById(R.id.spinnerEditorial)
+        btnGuardar = findViewById(R.id.btnGuardar)
 
         val btnSeleccionarImagen = findViewById<Button>(R.id.btnSeleccionarImagen)
-        val btnGuardar = findViewById<Button>(R.id.btnGuardar)
         val btnVolver = findViewById<ImageButton>(R.id.btnVolver)
 
         btnVolver.setOnClickListener { finish() }
@@ -98,6 +107,14 @@ class FormularioComicActivity : AppCompatActivity() {
         btnGuardar.setOnClickListener {
             guardarComic()
         }
+    }
+
+    private fun reducirBitmap(origen: Bitmap, maxLado: Int = 800): Bitmap {
+        val escala = maxLado.toFloat() / maxOf(origen.width, origen.height)
+        if (escala >= 1f) return origen
+        val nuevoAncho = (origen.width * escala).toInt().coerceAtLeast(1)
+        val nuevoAlto = (origen.height * escala).toInt().coerceAtLeast(1)
+        return Bitmap.createScaledBitmap(origen, nuevoAncho, nuevoAlto, true)
     }
 
     private fun cargarSpinners(onComplete: () -> Unit) {
@@ -141,6 +158,8 @@ class FormularioComicActivity : AppCompatActivity() {
                             spinnerEditorial.setOnItemClickListener { _, _, pos, _ ->
                                 idEdSeleccionada = editorialesListaIds[pos]
                             }
+                        } else {
+                            Toast.makeText(this, "No se pudieron cargar las editoriales", Toast.LENGTH_SHORT).show()
                         }
 
                         onComplete()
@@ -183,10 +202,26 @@ class FormularioComicActivity : AppCompatActivity() {
                     }
                 }
             }
+        }.addOnFailureListener { e ->
+            Toast.makeText(this, "Error al cargar el cómic: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
+    private fun iniciarGuardado() {
+        guardando = true
+        btnGuardar.isEnabled = false
+        btnGuardar.text = "Guardando..."
+    }
+
+    private fun terminarGuardado() {
+        guardando = false
+        btnGuardar.isEnabled = true
+        btnGuardar.text = "Guardar"
+    }
+
     private fun guardarComic() {
+        if (guardando) return
+
         val titulo = txtTitulo.text.toString().trim()
         val autor = txtAutor.text.toString().trim()
         val anioStr = txtAnio.text.toString().trim()
@@ -198,19 +233,28 @@ class FormularioComicActivity : AppCompatActivity() {
             return
         }
 
-        val anio = anioStr.toIntOrNull() ?: 0
-        if (anio < 1900 || anio > 2027) {
+        val anio = anioStr.toIntOrNull()
+        if (anio == null || anio < 1900 || anio > 2027) {
             Toast.makeText(this, "El año debe estar entre 1900 y 2027", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val precio = precioStr.toDoubleOrNull() ?: 0.0
+        val precio = if (precioStr.isEmpty()) 0.0 else precioStr.toDoubleOrNull()
+        if (precio == null || precio < 0 || precio > 1000000) {
+            Toast.makeText(this, "Ingresa un precio válido", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         var portadaBase64 = ""
         if (imagenSeleccionada != null) {
             val outputStream = ByteArrayOutputStream()
             imagenSeleccionada!!.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
             portadaBase64 = Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
+        }
+
+        if (portadaBase64.length > 900000) {
+            Toast.makeText(this, "La imagen es demasiado pesada, elige otra", Toast.LENGTH_SHORT).show()
+            return
         }
 
         val datos = hashMapOf<String, Any>(
@@ -224,12 +268,15 @@ class FormularioComicActivity : AppCompatActivity() {
             "portadaBase64" to portadaBase64
         )
 
+        iniciarGuardado()
+
         if (idComicEditando == null) {
             db.collection("Comics").add(datos).addOnSuccessListener {
                 registrarEventoAnalytics("registro_creado")
                 Toast.makeText(this, "Cómic guardado con éxito", Toast.LENGTH_SHORT).show()
                 finish()
             }.addOnFailureListener { e ->
+                terminarGuardado()
                 Toast.makeText(this, "Error al guardar: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         } else {
@@ -238,6 +285,7 @@ class FormularioComicActivity : AppCompatActivity() {
                 Toast.makeText(this, "Cómic actualizado con éxito", Toast.LENGTH_SHORT).show()
                 finish()
             }.addOnFailureListener { e ->
+                terminarGuardado()
                 Toast.makeText(this, "Error al actualizar: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }

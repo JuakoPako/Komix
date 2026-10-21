@@ -1,6 +1,7 @@
 package com.joaquin.komix
 
 import android.os.Bundle
+import android.util.Patterns
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
@@ -61,6 +62,8 @@ class ListaEditorialesActivity : AppCompatActivity() {
     private fun cargarDatos() {
         val uidActual = auth.currentUser?.uid ?: ""
 
+        lblContadorEditoriales.text = "Cargando editoriales..."
+
         db.collection("Editoriales")
             .whereEqualTo("uid", uidActual)
             .get()
@@ -69,7 +72,11 @@ class ListaEditorialesActivity : AppCompatActivity() {
                     contenedor.removeAllViews()
                     val docs = task.result.documents
                     val total = docs.size
-                    lblContadorEditoriales.text = if (total == 1) "1 editorial registrada" else "$total editoriales registradas"
+                    lblContadorEditoriales.text = when (total) {
+                        0 -> "Aún no hay editoriales registradas"
+                        1 -> "1 editorial registrada"
+                        else -> "$total editoriales registradas"
+                    }
 
                     val inflater = LayoutInflater.from(this)
 
@@ -94,15 +101,14 @@ class ListaEditorialesActivity : AppCompatActivity() {
                         txtNombre.text = nombre
 
                         val infoPaisAnio = buildString {
-                            if (pais.isNotEmpty()) append("📍 $pais")
+                            if (pais.isNotEmpty()) append("País: $pais")
                             if (anio > 0) append(" · Fundada en $anio")
                         }
                         txtPais.text = infoPaisAnio
 
-                        val estadoIcono = if (estado == "Inactiva") "🔴 Inactiva" else "🟢 Activa"
                         val infoContacto = buildString {
-                            if (correo.isNotEmpty()) append("✉️ $correo · ")
-                            append(estadoIcono)
+                            if (correo.isNotEmpty()) append("Contacto: $correo · ")
+                            append("Estado: $estado")
                         }
                         txtContacto.text = infoContacto
 
@@ -120,6 +126,7 @@ class ListaEditorialesActivity : AppCompatActivity() {
                     registrarEventoAnalytics("listado_consultado")
 
                 } else {
+                    lblContadorEditoriales.text = "No se pudieron cargar las editoriales"
                     Toast.makeText(this, "Error al cargar editoriales", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -156,47 +163,81 @@ class ListaEditorialesActivity : AppCompatActivity() {
 
         val tituloDialogo = if (idEditando == null) "Agregar Editorial" else "Editar Editorial"
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle(tituloDialogo)
             .setView(dialogView)
-            .setPositiveButton("Guardar") { _, _ ->
+            .setPositiveButton("Guardar", null)
+            .setNegativeButton("Cancelar", null)
+            .create()
+
+        dialog.setOnShowListener {
+            val btnGuardar = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+
+            btnGuardar.setOnClickListener {
                 val nombre = inputNombre.text.toString().trim()
                 val correo = inputCorreo.text.toString().trim()
                 val pais = inputPais.text.toString().trim()
-                val anio = inputAnio.text.toString().toIntOrNull() ?: 0
-                val estado = spinnerEstado.text.toString().trim().ifEmpty { "Activa" }
-
+                val anioStr = inputAnio.text.toString().trim()
+                val estadoTexto = spinnerEstado.text.toString().trim()
+                val estado = if (estadoTexto == "Inactiva") "Inactiva" else "Activa"
                 val uidActual = auth.currentUser?.uid ?: ""
 
                 if (nombre.isEmpty() || pais.isEmpty()) {
                     Toast.makeText(this, "Nombre y país son obligatorios", Toast.LENGTH_SHORT).show()
-                } else {
-                    val datos = hashMapOf<String, Any>(
-                        "uid" to uidActual,
-                        "nombre" to nombre,
-                        "correoContacto" to correo,
-                        "paisOrigen" to pais,
-                        "anioFundacion" to anio,
-                        "estado" to estado
-                    )
+                    return@setOnClickListener
+                }
 
-                    if (idEditando == null) {
-                        db.collection("Editoriales").add(datos).addOnSuccessListener {
-                            registrarEventoAnalytics("registro_creado")
-                            Toast.makeText(this, "Editorial guardada", Toast.LENGTH_SHORT).show()
-                            cargarDatos()
-                        }
-                    } else {
-                        db.collection("Editoriales").document(idEditando).update(datos).addOnSuccessListener {
-                            registrarEventoAnalytics("registro_actualizado")
-                            Toast.makeText(this, "Editorial actualizada", Toast.LENGTH_SHORT).show()
-                            cargarDatos()
-                        }
+                if (correo.isNotEmpty() && !Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+                    Toast.makeText(this, "Ingresa un correo válido", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                var anio = 0
+                if (anioStr.isNotEmpty()) {
+                    val anioNumero = anioStr.toIntOrNull()
+                    if (anioNumero == null || anioNumero < 1800 || anioNumero > 2027) {
+                        Toast.makeText(this, "El año de fundación debe estar entre 1800 y 2027", Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+                    anio = anioNumero
+                }
+
+                val datos = hashMapOf<String, Any>(
+                    "uid" to uidActual,
+                    "nombre" to nombre,
+                    "correoContacto" to correo,
+                    "paisOrigen" to pais,
+                    "anioFundacion" to anio,
+                    "estado" to estado
+                )
+
+                btnGuardar.isEnabled = false
+
+                if (idEditando == null) {
+                    db.collection("Editoriales").add(datos).addOnSuccessListener {
+                        registrarEventoAnalytics("registro_creado")
+                        Toast.makeText(this, "Editorial guardada", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                        cargarDatos()
+                    }.addOnFailureListener { e ->
+                        btnGuardar.isEnabled = true
+                        Toast.makeText(this, "Error al guardar: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    db.collection("Editoriales").document(idEditando).update(datos).addOnSuccessListener {
+                        registrarEventoAnalytics("registro_actualizado")
+                        Toast.makeText(this, "Editorial actualizada", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                        cargarDatos()
+                    }.addOnFailureListener { e ->
+                        btnGuardar.isEnabled = true
+                        Toast.makeText(this, "Error al actualizar: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
-            .setNegativeButton("Cancelar", null)
-            .show()
+        }
+
+        dialog.show()
     }
 
     private fun confirmarEliminar(id: String, nombre: String) {
@@ -208,6 +249,8 @@ class ListaEditorialesActivity : AppCompatActivity() {
                     registrarEventoAnalytics("registro_eliminado")
                     Toast.makeText(this, "Editorial eliminada", Toast.LENGTH_SHORT).show()
                     cargarDatos()
+                }.addOnFailureListener { e ->
+                    Toast.makeText(this, "Error al eliminar: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancelar", null)

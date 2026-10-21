@@ -62,6 +62,8 @@ class ListaComicsActivity : AppCompatActivity() {
     private fun cargarDatos() {
         val uidActual = auth.currentUser?.uid ?: ""
 
+        lblContadorComics.text = "Cargando cómics..."
+
         db.collection("Categorias").whereEqualTo("uid", uidActual).get().addOnCompleteListener { taskCat ->
             val categoriasMap = HashMap<String, String>()
             if (taskCat.isSuccessful && taskCat.result != null) {
@@ -83,7 +85,11 @@ class ListaComicsActivity : AppCompatActivity() {
                         contenedor.removeAllViews()
                         val docs = taskComics.result.documents
                         val total = docs.size
-                        lblContadorComics.text = if (total == 1) "1 cómic en la colección" else "$total cómics en la colección"
+                        lblContadorComics.text = when (total) {
+                            0 -> "Aún no hay cómics registrados"
+                            1 -> "1 cómic en la colección"
+                            else -> "$total cómics en la colección"
+                        }
 
                         val inflater = LayoutInflater.from(this)
 
@@ -146,6 +152,7 @@ class ListaComicsActivity : AppCompatActivity() {
                         registrarEventoAnalytics("listado_consultado")
 
                     } else {
+                        lblContadorComics.text = "No se pudieron cargar los cómics"
                         Toast.makeText(this, "Error al cargar cómics", Toast.LENGTH_SHORT).show()
                     }
                 }

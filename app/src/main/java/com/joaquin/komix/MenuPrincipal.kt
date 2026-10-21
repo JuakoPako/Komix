@@ -43,7 +43,6 @@ class MenuPrincipal : AppCompatActivity() {
         val lblBienvenida = findViewById<TextView>(R.id.lblBienvenida)
         val lblSubtitulo = findViewById<TextView>(R.id.lblSubtitulo)
 
-        // Mostrar datos del usuario logueado
         val usuario = FirebaseAuth.getInstance().currentUser
 
         if (usuario != null) {
@@ -66,7 +65,6 @@ class MenuPrincipal : AppCompatActivity() {
         val btnCrashTest = findViewById<Button>(R.id.btnCrashTest)
         val btnNonFatalTest = findViewById<Button>(R.id.btnNonFatalTest)
 
-
         cardComics.setOnClickListener {
             startActivity(Intent(this, ListaComicsActivity::class.java))
         }
@@ -86,8 +84,6 @@ class MenuPrincipal : AppCompatActivity() {
             finish()
         }
 
-
-        // Pruebas de Crashlytics
         btnCrashTest.setOnClickListener {
             Toast.makeText(this, "Lanzando crash de prueba...", Toast.LENGTH_SHORT).show()
             throw RuntimeException("Test Crash")
@@ -106,13 +102,11 @@ class MenuPrincipal : AppCompatActivity() {
         obtenerTokenFcm()
     }
 
-
     private fun pedirPermisoNotificaciones() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             solicitarPermisoNotificacion.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
     }
-
 
     private fun obtenerTokenFcm() {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->

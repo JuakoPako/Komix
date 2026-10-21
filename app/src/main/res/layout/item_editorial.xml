@@ -58,7 +58,7 @@
                 android:layout_marginTop="2dp"
                 android:textColor="@color/komix_gray_text"
                 android:textSize="13sp"
-                tools:text="📍 Estados Unidos · Fundada en 1939" />
+                tools:text="País: Estados Unidos · Fundada en 1939" />
 
             <TextView
                 android:id="@+id/txtContactoEditorial"
@@ -67,7 +67,7 @@
                 android:layout_marginTop="2dp"
                 android:textColor="@color/komix_aqua_light"
                 android:textSize="12sp"
-                tools:text="✉️ contacto@marvel.com · 🟢 Activa" />
+                tools:text="Contacto: contacto@marvel.com · Estado: Activa" />
         </LinearLayout>
 
         <ImageButton

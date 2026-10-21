@@ -80,8 +80,6 @@ class MainActivity : AppCompatActivity() {
         val btnRegistrar = findViewById<Button>(R.id.btnRegistrar)
         val btnGoogle = findViewById<Button>(R.id.btnGoogle)
 
-
-        // Login con correo y clave
         btnIngresar.setOnClickListener {
             var email = txtUsuario.text.toString().trim()
             var pass = txtPassword.text.toString().trim()
@@ -91,7 +89,6 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Atajo para credenciales rapidas
             if (email == "admin" && pass == "123") {
                 email = "admin@komix.com"
                 pass = "123456"
@@ -104,7 +101,6 @@ class MainActivity : AppCompatActivity() {
                         irAlMenu()
 
                     } else {
-                        // Si no existe el usuario admin de prueba, lo crea
                         if (email == "admin@komix.com") {
                             crearUsuarioPrueba(email, pass)
                         } else {
@@ -114,8 +110,6 @@ class MainActivity : AppCompatActivity() {
                 }
         }
 
-
-        // Registrar usuario nuevo
         btnRegistrar.setOnClickListener {
             val email = txtUsuario.text.toString().trim()
             val pass = txtPassword.text.toString().trim()
@@ -143,8 +137,6 @@ class MainActivity : AppCompatActivity() {
                 }
         }
 
-
-        // Login con Google
         btnGoogle.setOnClickListener {
             if (googleSignInClient != null) {
                 val signInIntent = googleSignInClient!!.signInIntent
@@ -154,7 +146,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
@@ -171,7 +162,6 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-
     private fun crearUsuarioPrueba(email: String, pass: String) {
         auth.createUserWithEmailAndPassword(email, pass)
             .addOnCompleteListener(this) { task ->
@@ -184,14 +174,12 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-
     private fun registrarAnalytics(metodo: String) {
         val bundle = Bundle().apply {
             putString(FirebaseAnalytics.Param.METHOD, metodo)
         }
         oFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle)
     }
-
 
     private fun irAlMenu() {
         val intent = Intent(this, MenuPrincipal::class.java)

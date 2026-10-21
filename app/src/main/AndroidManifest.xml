@@ -15,6 +15,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Komix">
 
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="komix_notifications_channel" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
