@@ -16,6 +16,8 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 
 class MenuPrincipal : AppCompatActivity() {
 
@@ -79,9 +81,12 @@ class MenuPrincipal : AppCompatActivity() {
 
         cardCerrarSesion.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
-            Toast.makeText(this, "Sesión cerrada", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+            GoogleSignIn.getClient(this, gso).signOut().addOnCompleteListener {
+                Toast.makeText(this,"Sesión Cerrada", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            }
         }
 
         btnCrashTest.setOnClickListener {

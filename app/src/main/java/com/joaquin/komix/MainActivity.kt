@@ -139,8 +139,9 @@ class MainActivity : AppCompatActivity() {
 
         btnGoogle.setOnClickListener {
             if (googleSignInClient != null) {
-                val signInIntent = googleSignInClient!!.signInIntent
-                googleSignInLauncher.launch(signInIntent)
+                googleSignInClient!!.signOut().addOnCompleteListener {
+                    googleSignInLauncher.launch(googleSignInClient!!.signInIntent)
+                }
             } else {
                 Toast.makeText(this, "Google Sign-In no disponible", Toast.LENGTH_SHORT).show()
             }
