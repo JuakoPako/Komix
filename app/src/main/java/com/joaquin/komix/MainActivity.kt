@@ -19,6 +19,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.installations.FirebaseInstallations
 
 class MainActivity : AppCompatActivity() {
 
@@ -60,6 +61,13 @@ class MainActivity : AppCompatActivity() {
         oFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
         auth = FirebaseAuth.getInstance()
 
+        FirebaseInstallations.getInstance().id.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("FIREBASE_TEST_ID", "ID de Instalacion: ${task.result}")
+            } else {
+                Log.e("FIREBASE_TEST_ID", "Error al obtener ID", task.exception)
+            }
+        }
         try {
             val webClientId = getString(R.string.default_web_client_id)
             val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
