@@ -9,7 +9,6 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -27,12 +26,14 @@ class ListaEditorialesActivity : AppCompatActivity() {
     private lateinit var oFirebaseAnalytics: FirebaseAnalytics
 
     private lateinit var contenedor: LinearLayout
+    private var anunciado = false
     private lateinit var lblContadorEditoriales: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_lista_editoriales)
+        Voz.iniciar(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -78,6 +79,11 @@ class ListaEditorialesActivity : AppCompatActivity() {
                         else -> "$total editoriales registradas"
                     }
 
+                    if (!anunciado) {
+                        anunciado = true
+                        Voz.hablar(lblContadorEditoriales.text.toString())
+                    }
+
                     val inflater = LayoutInflater.from(this)
 
                     for (doc in docs) {
@@ -112,6 +118,16 @@ class ListaEditorialesActivity : AppCompatActivity() {
                         }
                         txtContacto.text = infoContacto
 
+                        itemView.setOnClickListener {
+                            Voz.hablar(buildString {
+                                append("Editorial $nombre.")
+                                if (pais.isNotEmpty()) append(" País: $pais.")
+                                if (anio > 0) append(" Fundada en $anio.")
+                                if (correo.isNotEmpty()) append(" Contacto: ${correo.replace("@", " arroba ").replace(".", " punto ")}.")
+                                append(" Estado: $estado.")
+                            })
+                        }
+
                         btnEditar.setOnClickListener {
                             mostrarDialogoFormulario(id, nombre, correo, pais, anio, estado)
                         }
@@ -127,7 +143,7 @@ class ListaEditorialesActivity : AppCompatActivity() {
 
                 } else {
                     lblContadorEditoriales.text = "No se pudieron cargar las editoriales"
-                    Toast.makeText(this, "Error al cargar editoriales", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "Error al cargar editoriales")
                 }
             }
     }
@@ -183,12 +199,12 @@ class ListaEditorialesActivity : AppCompatActivity() {
                 val uidActual = auth.currentUser?.uid ?: ""
 
                 if (nombre.isEmpty() || pais.isEmpty()) {
-                    Toast.makeText(this, "Nombre y país son obligatorios", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "Nombre y país son obligatorios")
                     return@setOnClickListener
                 }
 
                 if (correo.isNotEmpty() && !Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
-                    Toast.makeText(this, "Ingresa un correo válido", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "Ingresa un correo válido")
                     return@setOnClickListener
                 }
 
@@ -196,7 +212,7 @@ class ListaEditorialesActivity : AppCompatActivity() {
                 if (anioStr.isNotEmpty()) {
                     val anioNumero = anioStr.toIntOrNull()
                     if (anioNumero == null || anioNumero < 1800 || anioNumero > 2027) {
-                        Toast.makeText(this, "El año de fundación debe estar entre 1800 y 2027", Toast.LENGTH_SHORT).show()
+                        Voz.aviso(this, "El año de fundación debe estar entre 1800 y 2027")
                         return@setOnClickListener
                     }
                     anio = anioNumero
@@ -216,22 +232,22 @@ class ListaEditorialesActivity : AppCompatActivity() {
                 if (idEditando == null) {
                     db.collection("Editoriales").add(datos).addOnSuccessListener {
                         registrarEventoAnalytics("registro_creado")
-                        Toast.makeText(this, "Editorial guardada", Toast.LENGTH_SHORT).show()
+                        Voz.aviso(this, "Editorial guardada")
                         dialog.dismiss()
                         cargarDatos()
                     }.addOnFailureListener { e ->
                         btnGuardar.isEnabled = true
-                        Toast.makeText(this, "Error al guardar: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Voz.aviso(this, "Error al guardar: ${e.message}", "Error al guardar")
                     }
                 } else {
                     db.collection("Editoriales").document(idEditando).update(datos).addOnSuccessListener {
                         registrarEventoAnalytics("registro_actualizado")
-                        Toast.makeText(this, "Editorial actualizada", Toast.LENGTH_SHORT).show()
+                        Voz.aviso(this, "Editorial actualizada")
                         dialog.dismiss()
                         cargarDatos()
                     }.addOnFailureListener { e ->
                         btnGuardar.isEnabled = true
-                        Toast.makeText(this, "Error al actualizar: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Voz.aviso(this, "Error al actualizar: ${e.message}", "Error al actualizar")
                     }
                 }
             }
@@ -247,10 +263,10 @@ class ListaEditorialesActivity : AppCompatActivity() {
             .setPositiveButton("Eliminar") { _, _ ->
                 db.collection("Editoriales").document(id).delete().addOnSuccessListener {
                     registrarEventoAnalytics("registro_eliminado")
-                    Toast.makeText(this, "Editorial eliminada", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "Editorial eliminada")
                     cargarDatos()
                 }.addOnFailureListener { e ->
-                    Toast.makeText(this, "Error al eliminar: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "Error al eliminar: ${e.message}", "Error al eliminar")
                 }
             }
             .setNegativeButton("Cancelar", null)

@@ -12,7 +12,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -59,9 +58,9 @@ class FormularioComicActivity : AppCompatActivity() {
                 imagenSeleccionada = bitmap
                 imgPreview.setImageBitmap(bitmap)
             } catch (e: Exception) {
-                Toast.makeText(this, "No se pudo cargar la imagen", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "No se pudo cargar la imagen")
             } catch (e: OutOfMemoryError) {
-                Toast.makeText(this, "La imagen es demasiado grande", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "La imagen es demasiado grande")
             }
         }
     }
@@ -70,6 +69,7 @@ class FormularioComicActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_formulario_comic)
+        Voz.iniciar(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -92,6 +92,8 @@ class FormularioComicActivity : AppCompatActivity() {
         val btnVolver = findViewById<ImageButton>(R.id.btnVolver)
 
         btnVolver.setOnClickListener { finish() }
+
+        Voz.hablar(if (intent.getStringExtra("id_comic").isNullOrEmpty()) "Nuevo cómic" else "Editar cómic")
 
         cargarSpinners {
             idComicEditando = intent.getStringExtra("id_comic")
@@ -159,7 +161,7 @@ class FormularioComicActivity : AppCompatActivity() {
                                 idEdSeleccionada = editorialesListaIds[pos]
                             }
                         } else {
-                            Toast.makeText(this, "No se pudieron cargar las editoriales", Toast.LENGTH_SHORT).show()
+                            Voz.aviso(this, "No se pudieron cargar las editoriales")
                         }
 
                         onComplete()
@@ -203,7 +205,7 @@ class FormularioComicActivity : AppCompatActivity() {
                 }
             }
         }.addOnFailureListener { e ->
-            Toast.makeText(this, "Error al cargar el cómic: ${e.message}", Toast.LENGTH_SHORT).show()
+            Voz.aviso(this, "Error al cargar el cómic: ${e.message}", "Error al cargar el cómic")
         }
     }
 
@@ -229,19 +231,19 @@ class FormularioComicActivity : AppCompatActivity() {
         val uidActual = auth.currentUser?.uid ?: ""
 
         if (titulo.isEmpty() || autor.isEmpty() || anioStr.isEmpty()) {
-            Toast.makeText(this, "Título, autor y año son obligatorios", Toast.LENGTH_SHORT).show()
+            Voz.aviso(this, "Título, autor y año son obligatorios")
             return
         }
 
         val anio = anioStr.toIntOrNull()
         if (anio == null || anio < 1900 || anio > 2027) {
-            Toast.makeText(this, "El año debe estar entre 1900 y 2027", Toast.LENGTH_SHORT).show()
+            Voz.aviso(this, "El año debe estar entre 1900 y 2027")
             return
         }
 
         val precio = if (precioStr.isEmpty()) 0.0 else precioStr.toDoubleOrNull()
         if (precio == null || precio < 0 || precio > 1000000) {
-            Toast.makeText(this, "Ingresa un precio válido", Toast.LENGTH_SHORT).show()
+            Voz.aviso(this, "Ingresa un precio válido")
             return
         }
 
@@ -253,7 +255,7 @@ class FormularioComicActivity : AppCompatActivity() {
         }
 
         if (portadaBase64.length > 900000) {
-            Toast.makeText(this, "La imagen es demasiado pesada, elige otra", Toast.LENGTH_SHORT).show()
+            Voz.aviso(this, "La imagen es demasiado pesada, elige otra")
             return
         }
 
@@ -273,20 +275,20 @@ class FormularioComicActivity : AppCompatActivity() {
         if (idComicEditando == null) {
             db.collection("Comics").add(datos).addOnSuccessListener {
                 registrarEventoAnalytics("registro_creado")
-                Toast.makeText(this, "Cómic guardado con éxito", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "Cómic guardado con éxito")
                 finish()
             }.addOnFailureListener { e ->
                 terminarGuardado()
-                Toast.makeText(this, "Error al guardar: ${e.message}", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "Error al guardar: ${e.message}", "Error al guardar")
             }
         } else {
             db.collection("Comics").document(idComicEditando!!).update(datos).addOnSuccessListener {
                 registrarEventoAnalytics("registro_actualizado")
-                Toast.makeText(this, "Cómic actualizado con éxito", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "Cómic actualizado con éxito")
                 finish()
             }.addOnFailureListener { e ->
                 terminarGuardado()
-                Toast.makeText(this, "Error al actualizar: ${e.message}", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "Error al actualizar: ${e.message}", "Error al actualizar")
             }
         }
     }

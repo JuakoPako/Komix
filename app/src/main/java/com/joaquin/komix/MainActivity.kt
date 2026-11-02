@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -38,12 +37,12 @@ class MainActivity : AppCompatActivity() {
             if (account != null && account.idToken != null) {
                 firebaseAuthWithGoogle(account.idToken!!)
             } else {
-                Toast.makeText(this, "No se pudo obtener la cuenta de Google", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "No se pudo obtener la cuenta de Google")
             }
 
         } catch (e: ApiException) {
             Log.w("GoogleSignIn", "Error al iniciar con Google: ${e.statusCode}", e)
-            Toast.makeText(this, "Error en Google Sign-In", Toast.LENGTH_SHORT).show()
+            Voz.aviso(this, "Error en Google Sign-In")
         }
     }
 
@@ -51,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+        Voz.iniciar(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity() {
             var pass = txtPassword.text.toString().trim()
 
             if (email.isEmpty() || pass.isEmpty()) {
-                Toast.makeText(this, "Ingresa tu correo y contraseña", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "Ingresa tu correo y contraseña")
                 return@setOnClickListener
             }
 
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
                         if (email == "admin@komix.com") {
                             crearUsuarioPrueba(email, pass)
                         } else {
-                            Toast.makeText(this, "Correo o contraseña incorrectos", Toast.LENGTH_SHORT).show()
+                            Voz.aviso(this, "Correo o contraseña incorrectos")
                         }
                     }
                 }
@@ -123,24 +123,24 @@ class MainActivity : AppCompatActivity() {
             val pass = txtPassword.text.toString().trim()
 
             if (email.isEmpty() || pass.isEmpty()) {
-                Toast.makeText(this, "Ingresa un correo y clave de al menos 6 caracteres", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "Ingresa un correo y clave de al menos 6 caracteres")
                 return@setOnClickListener
             }
 
             if (pass.length < 6) {
-                Toast.makeText(this, "La clave debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "La clave debe tener al menos 6 caracteres")
                 return@setOnClickListener
             }
 
             auth.createUserWithEmailAndPassword(email, pass)
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
-                        Toast.makeText(this, "Usuario registrado con éxito", Toast.LENGTH_SHORT).show()
+                        Voz.aviso(this, "Usuario registrado con éxito")
                         registrarAnalytics("registro")
                         irAlMenu()
 
                     } else {
-                        Toast.makeText(this, "Error al registrar: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        Voz.aviso(this, "Error al registrar: ${task.exception?.message}", "Error al registrar")
                     }
                 }
         }
@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity() {
                     googleSignInLauncher.launch(googleSignInClient!!.signInIntent)
                 }
             } else {
-                Toast.makeText(this, "Google Sign-In no disponible", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "Google Sign-In no disponible")
             }
         }
     }
@@ -166,7 +166,7 @@ class MainActivity : AppCompatActivity() {
                     irAlMenu()
 
                 } else {
-                    Toast.makeText(this, "Error de autenticación con Google", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "Error de autenticación con Google")
                 }
             }
     }
@@ -178,7 +178,7 @@ class MainActivity : AppCompatActivity() {
                     registrarAnalytics("email")
                     irAlMenu()
                 } else {
-                    Toast.makeText(this, "Error de acceso", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "Error de acceso")
                 }
             }
     }

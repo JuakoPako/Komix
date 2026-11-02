@@ -6,7 +6,6 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -24,12 +23,14 @@ class ListaCategoriasActivity : AppCompatActivity() {
     private lateinit var oFirebaseAnalytics: FirebaseAnalytics
 
     private lateinit var contenedor: LinearLayout
+    private var anunciado = false
     private lateinit var lblContadorCategorias: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_lista_categorias)
+        Voz.iniciar(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -69,6 +70,11 @@ class ListaCategoriasActivity : AppCompatActivity() {
                     val total = docs.size
                     lblContadorCategorias.text = if (total == 1) "1 categoría registrada" else "$total categorías registradas"
 
+                    if (!anunciado) {
+                        anunciado = true
+                        Voz.hablar(lblContadorCategorias.text.toString())
+                    }
+
                     val inflater = LayoutInflater.from(this)
 
                     for (doc in docs) {
@@ -82,6 +88,10 @@ class ListaCategoriasActivity : AppCompatActivity() {
                         val btnEliminar = itemView.findViewById<ImageButton>(R.id.btnEliminar)
 
                         txtNombre.text = nombre
+
+                        itemView.setOnClickListener {
+                            Voz.hablar("Categoría $nombre")
+                        }
 
                         btnEditar.setOnClickListener {
                             mostrarDialogoFormulario(id, nombre)
@@ -97,7 +107,7 @@ class ListaCategoriasActivity : AppCompatActivity() {
                     registrarEventoAnalytics("listado_consultado")
 
                 } else {
-                    Toast.makeText(this, "Error al cargar categorías", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "Error al cargar categorías")
                 }
             }
     }
@@ -120,7 +130,7 @@ class ListaCategoriasActivity : AppCompatActivity() {
                 val uidActual = auth.currentUser?.uid ?: ""
 
                 if (texto.isEmpty()) {
-                    Toast.makeText(this, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "El nombre no puede estar vacío")
                 } else {
                     val datos = hashMapOf<String, Any>(
                         "uid" to uidActual,
@@ -130,13 +140,13 @@ class ListaCategoriasActivity : AppCompatActivity() {
                     if (idEditando == null) {
                         db.collection("Categorias").add(datos).addOnSuccessListener {
                             registrarEventoAnalytics("registro_creado")
-                            Toast.makeText(this, "Categoría agregada", Toast.LENGTH_SHORT).show()
+                            Voz.aviso(this, "Categoría agregada")
                             cargarDatos()
                         }
                     } else {
                         db.collection("Categorias").document(idEditando).update(datos).addOnSuccessListener {
                             registrarEventoAnalytics("registro_actualizado")
-                            Toast.makeText(this, "Categoría actualizada", Toast.LENGTH_SHORT).show()
+                            Voz.aviso(this, "Categoría actualizada")
                             cargarDatos()
                         }
                     }
@@ -153,7 +163,7 @@ class ListaCategoriasActivity : AppCompatActivity() {
             .setPositiveButton("Eliminar") { _, _ ->
                 db.collection("Categorias").document(id).delete().addOnSuccessListener {
                     registrarEventoAnalytics("registro_eliminado")
-                    Toast.makeText(this, "Categoría eliminada", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "Categoría eliminada")
                     cargarDatos()
                 }
             }

@@ -9,7 +9,6 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -27,12 +26,14 @@ class ListaComicsActivity : AppCompatActivity() {
     private lateinit var oFirebaseAnalytics: FirebaseAnalytics
 
     private lateinit var contenedor: LinearLayout
+    private var anunciado = false
     private lateinit var lblContadorComics: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_lista_comics)
+        Voz.iniciar(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -91,6 +92,11 @@ class ListaComicsActivity : AppCompatActivity() {
                             else -> "$total cómics en la colección"
                         }
 
+                        if (!anunciado) {
+                            anunciado = true
+                            Voz.hablar(lblContadorComics.text.toString())
+                        }
+
                         val inflater = LayoutInflater.from(this)
 
                         for (doc in docs) {
@@ -136,6 +142,16 @@ class ListaComicsActivity : AppCompatActivity() {
                             txtCategoriaTag.text = categoriasMap[idCat] ?: "Sin categoría"
                             txtEditorialTag.text = editorialesMap[idEd] ?: "Sin editorial"
 
+                            itemView.setOnClickListener {
+                                val precioTexto = if (precio % 1.0 == 0.0) precio.toLong().toString() else precio.toString()
+                                Voz.hablar(buildString {
+                                    append("$titulo, de $autor.")
+                                    if (anio > 0) append(" Año $anio.")
+                                    if (precio > 0) append(" Precio $precioTexto.")
+                                    append(" Categoría ${txtCategoriaTag.text}. Editorial ${txtEditorialTag.text}.")
+                                })
+                            }
+
                             btnEditar.setOnClickListener {
                                 val intent = Intent(this, FormularioComicActivity::class.java)
                                 intent.putExtra("id_comic", id)
@@ -153,7 +169,7 @@ class ListaComicsActivity : AppCompatActivity() {
 
                     } else {
                         lblContadorComics.text = "No se pudieron cargar los cómics"
-                        Toast.makeText(this, "Error al cargar cómics", Toast.LENGTH_SHORT).show()
+                        Voz.aviso(this, "Error al cargar cómics")
                     }
                 }
             }
@@ -167,10 +183,10 @@ class ListaComicsActivity : AppCompatActivity() {
             .setPositiveButton("Eliminar") { _, _ ->
                 db.collection("Comics").document(id).delete().addOnSuccessListener {
                     registrarEventoAnalytics("registro_eliminado")
-                    Toast.makeText(this, "Cómic eliminado", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "Cómic eliminado")
                     cargarDatos()
                 }.addOnFailureListener { e ->
-                    Toast.makeText(this, "Error al eliminar: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Voz.aviso(this, "Error al eliminar: ${e.message}", "Error al eliminar")
                 }
             }
             .setNegativeButton("Cancelar", null)

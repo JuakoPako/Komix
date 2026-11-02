@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -35,6 +34,7 @@ class MenuPrincipal : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_menu_principal)
+        Voz.iniciar(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -83,14 +83,14 @@ class MenuPrincipal : AppCompatActivity() {
             FirebaseAuth.getInstance().signOut()
             val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
             GoogleSignIn.getClient(this, gso).signOut().addOnCompleteListener {
-                Toast.makeText(this,"Sesión Cerrada", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "Sesión Cerrada")
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }
         }
 
         btnCrashTest.setOnClickListener {
-            Toast.makeText(this, "Lanzando crash de prueba...", Toast.LENGTH_SHORT).show()
+            Voz.aviso(this, "Lanzando crash de prueba...")
             throw RuntimeException("Test Crash")
         }
 
@@ -99,9 +99,11 @@ class MenuPrincipal : AppCompatActivity() {
                 throw Exception("Prueba de error capturado")
             } catch (e: Exception) {
                 FirebaseCrashlytics.getInstance().recordException(e)
-                Toast.makeText(this, "Error enviado a Crashlytics", Toast.LENGTH_SHORT).show()
+                Voz.aviso(this, "Error enviado a Crashlytics")
             }
         }
+
+        Voz.hablar("${lblBienvenida.text}. Bienvenido a Komix")
 
         pedirPermisoNotificaciones()
         obtenerTokenFcm()
