@@ -84,6 +84,11 @@ class FormularioComicActivity : AppCompatActivity() {
         txtAutor = findViewById(R.id.txtAutor)
         txtAnio = findViewById(R.id.txtAnio)
         txtPrecio = findViewById(R.id.txtPrecio)
+
+        Voz.escucharTeclado(txtTitulo)
+        Voz.escucharTeclado(txtAutor)
+        Voz.escucharTeclado(txtAnio)
+        Voz.escucharTeclado(txtPrecio)
         spinnerCategoria = findViewById(R.id.spinnerCategoria)
         spinnerEditorial = findViewById(R.id.spinnerEditorial)
         btnGuardar = findViewById(R.id.btnGuardar)

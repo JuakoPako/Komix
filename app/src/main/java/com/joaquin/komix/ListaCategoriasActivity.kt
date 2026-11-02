@@ -31,6 +31,7 @@ class ListaCategoriasActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_lista_categorias)
         Voz.iniciar(this)
+        Voz.hablar("Categorías")
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -72,7 +73,7 @@ class ListaCategoriasActivity : AppCompatActivity() {
 
                     if (!anunciado) {
                         anunciado = true
-                        Voz.hablar(lblContadorCategorias.text.toString())
+                        Voz.hablar(lblContadorCategorias.text.toString(), encolar = true)
                     }
 
                     val inflater = LayoutInflater.from(this)
@@ -115,12 +116,14 @@ class ListaCategoriasActivity : AppCompatActivity() {
     private fun mostrarDialogoFormulario(idEditando: String?, nombreEdit: String) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_categoria_formulario, null)
         val input = dialogView.findViewById<EditText>(R.id.inputNombreCategoria)
+        Voz.escucharTeclado(input)
 
         if (!idEditando.isNullOrEmpty()) {
             input.setText(nombreEdit)
         }
 
         val tituloDialogo = if (idEditando == null) "Agregar Categoría" else "Editar Categoría"
+        Voz.hablar(tituloDialogo)
 
         AlertDialog.Builder(this)
             .setTitle(tituloDialogo)

@@ -84,6 +84,9 @@ class MainActivity : AppCompatActivity() {
         val txtUsuario = findViewById<EditText>(R.id.txtUsuario)
         val txtPassword = findViewById<EditText>(R.id.txtPassword)
 
+        // Solo el correo: la contraseña no se dice en voz alta
+        Voz.escucharTeclado(txtUsuario)
+
         val btnIngresar = findViewById<Button>(R.id.btnComics)
         val btnRegistrar = findViewById<Button>(R.id.btnRegistrar)
         val btnGoogle = findViewById<Button>(R.id.btnGoogle)

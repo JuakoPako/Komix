@@ -34,6 +34,7 @@ class ListaEditorialesActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_lista_editoriales)
         Voz.iniciar(this)
+        Voz.hablar("Editoriales")
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -81,7 +82,7 @@ class ListaEditorialesActivity : AppCompatActivity() {
 
                     if (!anunciado) {
                         anunciado = true
-                        Voz.hablar(lblContadorEditoriales.text.toString())
+                        Voz.hablar(lblContadorEditoriales.text.toString(), encolar = true)
                     }
 
                     val inflater = LayoutInflater.from(this)
@@ -163,6 +164,11 @@ class ListaEditorialesActivity : AppCompatActivity() {
         val inputAnio = dialogView.findViewById<EditText>(R.id.inputAnio)
         val spinnerEstado = dialogView.findViewById<AutoCompleteTextView>(R.id.spinnerEstado)
 
+        Voz.escucharTeclado(inputNombre)
+        Voz.escucharTeclado(inputCorreo)
+        Voz.escucharTeclado(inputPais)
+        Voz.escucharTeclado(inputAnio)
+
         val opcionesEstado = listOf("Activa", "Inactiva")
         val adapterEstado = ArrayAdapter(this, R.layout.item_dropdown_dialog, opcionesEstado)
         spinnerEstado.setAdapter(adapterEstado)
@@ -178,6 +184,7 @@ class ListaEditorialesActivity : AppCompatActivity() {
         }
 
         val tituloDialogo = if (idEditando == null) "Agregar Editorial" else "Editar Editorial"
+        Voz.hablar(tituloDialogo)
 
         val dialog = AlertDialog.Builder(this)
             .setTitle(tituloDialogo)

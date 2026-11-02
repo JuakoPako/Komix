@@ -34,6 +34,7 @@ class ListaComicsActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_lista_comics)
         Voz.iniciar(this)
+        Voz.hablar("Cómics")
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -94,7 +95,7 @@ class ListaComicsActivity : AppCompatActivity() {
 
                         if (!anunciado) {
                             anunciado = true
-                            Voz.hablar(lblContadorComics.text.toString())
+                            Voz.hablar(lblContadorComics.text.toString(), encolar = true)
                         }
 
                         val inflater = LayoutInflater.from(this)
