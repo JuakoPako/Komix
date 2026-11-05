@@ -64,8 +64,7 @@ class MenuPrincipal : AppCompatActivity() {
         val cardEditoriales = findViewById<CardView>(R.id.cardEditoriales)
         val cardCerrarSesion = findViewById<CardView>(R.id.cardCerrarSesion)
 
-        val btnCrashTest = findViewById<Button>(R.id.btnCrashTest)
-        val btnNonFatalTest = findViewById<Button>(R.id.btnNonFatalTest)
+
 
         cardComics.setOnClickListener {
             startActivity(Intent(this, ListaComicsActivity::class.java))
@@ -89,19 +88,6 @@ class MenuPrincipal : AppCompatActivity() {
             }
         }
 
-        btnCrashTest.setOnClickListener {
-            Voz.aviso(this, "Lanzando crash de prueba...")
-            throw RuntimeException("Test Crash")
-        }
-
-        btnNonFatalTest.setOnClickListener {
-            try {
-                throw Exception("Prueba de error capturado")
-            } catch (e: Exception) {
-                FirebaseCrashlytics.getInstance().recordException(e)
-                Voz.aviso(this, "Error enviado a Crashlytics")
-            }
-        }
 
         Voz.hablar("${lblBienvenida.text}. Bienvenido a Komix")
 

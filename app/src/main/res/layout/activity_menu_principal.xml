@@ -238,67 +238,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/cardEditoriales"
             app:strokeColor="@color/komix_card_border"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Diagnostico Firebase Crashlytics"
-                    android:textColor="@color/komix_white"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Genera eventos de prueba para verificar los reportes en la consola de Firebase."
-                    android:textColor="@color/komix_gray_text"
-                    android:textSize="12sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnNonFatalTest"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="6dp"
-                        android:layout_weight="1"
-                        android:text="Error No Fatal"
-                        android:textColor="@color/komix_aqua"
-                        android:textSize="12sp"
-                        app:cornerRadius="10dp"
-                        app:strokeColor="@color/komix_aqua" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnCrashTest"
-                        style="@style/Widget.Material3.Button"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:layout_weight="1"
-                        android:backgroundTint="@color/komix_red"
-                        android:text="Crash de Prueba"
-                        android:textColor="@color/komix_white"
-                        android:textSize="12sp"
-                        app:cornerRadius="10dp" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
+            app:strokeWidth="1dp"/>
 
 
         <ImageButton
