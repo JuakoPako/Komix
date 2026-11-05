@@ -58,6 +58,7 @@ class ListaComicsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        Voz.configurarBoton(findViewById(R.id.btnVoz))
         cargarDatos()
     }
 

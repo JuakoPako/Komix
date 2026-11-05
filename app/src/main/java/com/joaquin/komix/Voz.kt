@@ -6,21 +6,20 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import java.util.Locale
 
-/**
- * Voz de la aplicación (Text-to-Speech).
- * Es un objeto único para toda la app: se inicia una sola vez y sigue hablando
- * aunque la pantalla cambie o se cierre.
- */
 object Voz {
 
     private var tts: TextToSpeech? = null
     private var listo = false
     private var pendiente: String? = null
 
-    // Se llama en el onCreate de cada pantalla; solo inicia el motor la primera vez
+    var activada = false
+        private set
+
     fun iniciar(contexto: Context) {
         if (tts != null) return
 
@@ -32,7 +31,7 @@ object Voz {
 
             val motor = tts ?: return@TextToSpeech
 
-            // Primero español de Chile, luego España, luego español genérico
+
             val idiomas = listOf(Locale("es", "CL"), Locale("es", "ES"), Locale("es"))
             val elegido = idiomas.firstOrNull { motor.isLanguageAvailable(it) >= TextToSpeech.LANG_AVAILABLE }
 
@@ -44,16 +43,13 @@ object Voz {
 
             listo = true
 
-            // Si pidieron hablar antes de que el motor estuviera listo
             pendiente?.let { hablar(it) }
             pendiente = null
         }
     }
 
-    // Dice el texto en voz alta.
-    // Normal: corta lo que estaba diciendo. Con encolar = true: espera a que termine lo anterior.
     fun hablar(texto: String, encolar: Boolean = false) {
-        if (texto.isBlank()) return
+        if (!activada || texto.isBlank()) return
 
         if (!listo) {
             pendiente = texto
@@ -64,8 +60,7 @@ object Voz {
         tts?.speak(texto, modo, null, "komix_voz")
     }
 
-    // Dice cada letra que se escribe en el campo (y "borrar" cuando se borra una).
-    // No usar en campos de contraseña.
+
     fun escucharTeclado(campo: EditText) {
         campo.addTextChangedListener(object : TextWatcher {
             private var anterior = ""
@@ -77,7 +72,7 @@ object Voz {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable?) {
-                // Si el texto lo puso la app (por ejemplo al editar un registro), no habla
+
                 if (!campo.hasFocus()) return
                 val nuevo = s?.toString() ?: return
 
@@ -93,7 +88,6 @@ object Voz {
         })
     }
 
-    // Nombre hablado de los símbolos que el motor suele leer mal
     private fun nombreCaracter(c: Char): String = when (c) {
         ' ' -> "espacio"
         '@' -> "arroba"
@@ -108,8 +102,6 @@ object Voz {
         else -> c.toString()
     }
 
-    // Muestra el mensaje en pantalla (Toast) y además lo dice.
-    // Si el mensaje trae un error técnico, "decir" permite hablar solo la parte clara.
     fun aviso(contexto: Context, mensaje: String, decir: String = mensaje) {
         Toast.makeText(contexto, mensaje, Toast.LENGTH_SHORT).show()
         hablar(decir)
@@ -117,5 +109,36 @@ object Voz {
 
     fun detener() {
         tts?.stop()
+    }
+
+
+    fun desactivar() {
+        activada = false
+        pendiente = null
+        detener()
+    }
+
+
+    fun configurarBoton(boton: ImageButton) {
+        actualizarBoton(boton)
+
+        boton.setOnClickListener {
+            if (activada) {
+                desactivar()
+                Toast.makeText(boton.context, "Voz desactivada", Toast.LENGTH_SHORT).show()
+            } else {
+                activada = true
+                Toast.makeText(boton.context, "Voz activada", Toast.LENGTH_SHORT).show()
+                hablar("Voz activada")
+            }
+            actualizarBoton(boton)
+        }
+    }
+
+    private fun actualizarBoton(boton: ImageButton) {
+        val color = if (activada) R.color.komix_aqua else R.color.komix_gray_text
+        boton.setImageResource(if (activada) R.drawable.ic_voz_on else R.drawable.ic_voz_off)
+        boton.setColorFilter(ContextCompat.getColor(boton.context, color))
+        boton.contentDescription = if (activada) "Desactivar voz" else "Activar voz"
     }
 }

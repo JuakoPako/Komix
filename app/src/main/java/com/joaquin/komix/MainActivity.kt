@@ -52,6 +52,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         Voz.iniciar(this)
 
+        // Al llegar al login (abrir la app o volver tras cerrar sesión) la voz parte desactivada
+        if (savedInstanceState == null) Voz.desactivar()
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -157,6 +160,11 @@ class MainActivity : AppCompatActivity() {
                 Voz.aviso(this, "Google Sign-In no disponible")
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Voz.configurarBoton(findViewById(R.id.btnVoz))
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {

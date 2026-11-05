@@ -109,6 +109,11 @@ class MenuPrincipal : AppCompatActivity() {
         obtenerTokenFcm()
     }
 
+    override fun onResume() {
+        super.onResume()
+        Voz.configurarBoton(findViewById(R.id.btnVoz))
+    }
+
     private fun pedirPermisoNotificaciones() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             solicitarPermisoNotificacion.launch(android.Manifest.permission.POST_NOTIFICATIONS)

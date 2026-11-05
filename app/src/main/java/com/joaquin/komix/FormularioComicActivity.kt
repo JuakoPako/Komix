@@ -116,6 +116,11 @@ class FormularioComicActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        Voz.configurarBoton(findViewById(R.id.btnVoz))
+    }
+
     private fun reducirBitmap(origen: Bitmap, maxLado: Int = 800): Bitmap {
         val escala = maxLado.toFloat() / maxOf(origen.width, origen.height)
         if (escala >= 1f) return origen
